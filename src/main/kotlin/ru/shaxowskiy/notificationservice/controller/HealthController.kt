@@ -4,10 +4,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class TestController {
+class HealthController {
 
-    @GetMapping("/hello")
+    @GetMapping("/health")
     fun test(): String {
-        return "Hello Kotlin"
+        return "OK"
     }
 }
