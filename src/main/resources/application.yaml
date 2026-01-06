@@ -2,11 +2,25 @@ bot:
   token: ${token_bot}
 
 spring:
-  config:
-    import: optional:file:.env[.properties]
-  application:
-    name: notification-service
+  kafka:
+    consumer:
+      group-id: notification-group
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: "ru.shaxowskiy.notificationservice.dto.PostEventDto"
 
+
+    liquibase:
+      default-schema: public
+      enabled: true
+    config:
+      import: optional:file:.env[.properties]
+    application:
+      name: notification-service
 
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
@@ -20,6 +34,9 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
-  jpa:
-    hibernate:
-      dialect: PostgreSQL
+logging:
+  level:
+    org:
+      jooq:
+        tools:
+          LoggerListener: DEBUG
