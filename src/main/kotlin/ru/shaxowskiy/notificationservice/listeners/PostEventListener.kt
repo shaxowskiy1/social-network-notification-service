@@ -1,11 +1,12 @@
 package ru.shaxowskiy.notificationservice.listeners
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.annotation.KafkaListener
-import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 import ru.shaxowskiy.notificationservice.dto.PostEventDto
+import ru.shaxowskiy.notificationservice.dto.SubscribeInfoDto
 import ru.shaxowskiy.notificationservice.repository.UserRepository
 import ru.shaxowskiy.notificationservice.service.TelegramBotService
 
@@ -15,6 +16,8 @@ class PostEventListener(
     var telegramBotService: TelegramBotService
 ) {
 
+    val channel = Channel<SubscribeInfoDto>()
+    val coroutineScopeDefault = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
     val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 
@@ -32,9 +35,11 @@ class PostEventListener(
     }
 
     private suspend fun handleMessage(message: PostEventDto) {
-        val subscribers = userRepository.findSubscribersByUsername(message.author_post)
-        //rate limit to 30 messages
+        //TODO rate limit to 30 messages
         coroutineScope{
+            coroutineScope.launch {
+                val subscribers = userRepository.findSubscribersByUsername(message.author_post)
+            }
             subscribers.forEach {subscriberInfo ->
                 coroutineScope.launch {
                     telegramBotService.sendNotificationMessage(
@@ -43,6 +48,8 @@ class PostEventListener(
                     )
                 }
             }
+
+            println("Waiting coroutine finish")
         }
 
     }

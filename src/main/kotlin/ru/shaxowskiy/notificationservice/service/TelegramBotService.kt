@@ -2,6 +2,9 @@ package ru.shaxowskiy.notificationservice.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import lombok.extern.slf4j.Slf4j
+import org.springframework.ai.chat.messages.UserMessage
+import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient
@@ -16,7 +19,8 @@ import ru.shaxowskiy.notificationservice.repository.UserRepository
 @Slf4j
 class TelegramBotService(
     @Value("\${bot.token}") private val token: String,
-    private val userRepository : UserRepository
+    private val userRepository : UserRepository,
+    val chatModel: ChatModel
 ) : LongPollingSingleThreadUpdateConsumer {
 
     private val log = KotlinLogging.logger("TelegramBotService")
@@ -50,10 +54,13 @@ class TelegramBotService(
     }
 
     fun sendNotificationMessage(chatId: String, author: String){
+        val promptText = "Сгенерируй короткое уведомление о появлении публикации для человека, который подписан на $author"
+//        val response = chatModel.call(Prompt(promptText))
         val message = SendMessage
             .builder()
             .chatId(chatId)
             .text("Человек на которого вы подписаны $author опубликовал(а) пост")
+//            .text("Человек на которого вы подписаны $author опубликовал(а) пост\n\n$response")
             .build()
 
 

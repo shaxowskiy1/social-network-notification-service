@@ -2,6 +2,13 @@ bot:
   token: ${token_bot}
 
 spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.2
+          temperature: 1.0
   kafka:
     consumer:
       group-id: notification-group
